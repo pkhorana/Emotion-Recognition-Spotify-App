@@ -192,7 +192,7 @@ def determineEmotion(map):
             max = map[key]
             maxKey = key
     if (maxKey == 'anger' or maxKey == 'contempt' or maxKey == 'disgust' or maxKey == 'fear' or maxKey == 'sadness'):
-        if (max < 0.2):
+        if (max > 0.2):
             return 1
         return 0
     else:
