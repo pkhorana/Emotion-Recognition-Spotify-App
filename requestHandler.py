@@ -1,4 +1,19 @@
 from flask import Flask, request, abort, jsonify
+from blobAdder import *
+from numpy import random
+import pandas as pd
+from pandas.plotting import scatter_matrix
+import matplotlib.pyplot as plt
+from sklearn import model_selection
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+
+import blobAdder
+from machineLearning import trainDataset
 
 from blobAdder import *
 from detectFace import *
@@ -19,7 +34,8 @@ def handle_push():
         container = 'expressiveblobs'
         createContainer(container)
         addBlob(file, container)
-        return jsonify({'status': 'ok'}), 201
+        val = detect_faces_url("https://bosehomehub.blob.core.windows.net/" + container + "/" + file)
+        return jsonify({'status': val}), 201
 
     if request.method == 'GET':
         print("helllo")
@@ -29,7 +45,24 @@ def handle_push():
         emo = determineEmotion(emotMap)
         print(emo)
         deleteCont('expressiveblobs')
-        return jsonify({'emotion': emo}), 202
+        return jsonify({'like': emo}), 202
+
+    # if request.method == 'GET':
+    #     print("helllo")
+    #     cart = trainDataset()
+    #     urls = urlList('expressiveblobs')
+    #     emotMap = computeAverage(urls)
+    #     print(emotMap)
+    #     #emo = determineEmotion(emotMap)
+    #     #print(emo)
+    #     list = ['anger', 'contempt', 'disgust', 'fear', 'happiness', 'neutral', 'sadness', 'surprise']
+    #     input = [[]]
+    #     for item in list:
+    #         input[0].append(emotMap[item])
+    #     prediction = cart.predict(input)
+    #     print(prediction)
+    #     deleteCont('expressiveblobs')
+    #     return jsonify({'like': prediction[0]}), 202
 
     return jsonify({'status': 'error'}), 404
 

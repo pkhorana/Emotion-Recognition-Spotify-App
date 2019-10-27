@@ -102,8 +102,20 @@
 
 
 from blobAdder import *
+from numpy import random
+import pandas as pd
+from pandas.plotting import scatter_matrix
+import matplotlib.pyplot as plt
+from sklearn import model_selection
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
 
 import blobAdder
+from machineLearning import trainDataset
 
 
 def detect_faces_url(url):
@@ -134,7 +146,7 @@ def detect_faces_url(url):
     json_data = response.json() if response and response.status_code == 200 else None
     if json_data == None or len(json_data) == 0:
         return None
-
+    print(json_data[0]['faceAttributes']['emotion'])
     return json_data[0]['faceAttributes']['emotion']
 
 
@@ -155,14 +167,17 @@ def computeAverage(urls):
             continue
         counter += 1
         for emotion in emotions:
-            value = emotions[emotion]
-            map[emotion] += value
+            if emotions[emotion] > map[emotion]:
+                map[emotion] = emotions[emotion]
 
-    for key, value in map.items():
-        if counter == 0:
-            map[key] = 0
-            continue
-        map[key] = value / counter
+            # value = emotions[emotion]
+            # map[emotion] += value
+
+    # maxEmot = float("-inf")
+    # for key, value in map.items():
+    #     if value > maxEmot:
+    #         map[key] = value
+
 
     return map
 
@@ -173,10 +188,16 @@ def determineEmotion(map):
     max = float("-inf")
     maxKey = "something"
     for key, value in map.items():
-        if map[key] > max:
+        if map[key] > max and key != 'neutral':
             max = map[key]
             maxKey = key
-    return maxKey
+    if (maxKey == 'anger' or maxKey == 'contempt' or maxKey == 'disgust' or maxKey == 'fear' or maxKey == 'sadness'):
+        if (max < 0.2):
+            return 1
+        return 0
+    else:
+        return 1
+
 
 
 
@@ -184,16 +205,26 @@ def determineEmotion(map):
 
 # Main method.
 if __name__ == '__main__':
-    createContainer('expressionblobs3')
-    addBlob('smile.png', 'expressionblobs3')
-
-    addBlob('sanket.jpg', 'expressionblobs3')
-    addBlob('excitedface.png', 'expressionblobs3')
-    addBlob('sadface.png', 'expressionblobs3')
-    urls = urlList('expressionblobs3')
+    # createContainer('expressionblobs3')
+    # addBlob('smile.png', 'expressionblobs3')
+    #
+    # addBlob('sanket.jpg', 'expressionblobs3')
+    # addBlob('excitedface.png', 'expressionblobs3')
+    # addBlob('sadface.png', 'expressionblobs3')
+    # urls = urlList('expressionblobs3')
+    # emotMap = computeAverage(urls)
+    # print(emotMap)
+    # print(determineEmotion(emotMap))
+    cart = trainDataset()
+    #detect_faces_url('https://bosehomehub.blob.core.windows.net/expressionblobs4/sm.jpg')
+    urls = urlList('expressionblobs4')
     emotMap = computeAverage(urls)
-    print(emotMap)
-    print(determineEmotion(emotMap))
+    list = ['anger', 'contempt', 'disgust', 'fear', 'happiness', 'neutral', 'sadness', 'surprise']
+    input = [[]]
+    for item in list:
+        input[0].append(emotMap[item])
+    prediction = cart.predict(input)
+    print(prediction)
 
 
 
